@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Master UML & C# - Teoría</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f0fdf4; color: #064e3b; }
+        .font-code { font-family: 'JetBrains Mono', monospace; }
+        
+        /* Tarjeta principal */
+        .quiz-card {
+            background-color: #ffffff;
+            border-radius: 1rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            border: 1px solid #dcfce7;
+            overflow: hidden;
+        }
+
+        /* Botones de opción */
+        .btn-option {
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid #e2e8f0;
+            background-color: #f8fafc;
+        }
+        .btn-option:hover:not(:disabled) {
+            background-color: #dcfce7;
+            border-color: #86efac;
+            transform: translateX(4px);
+            color: #14532d;
+        }
+        .btn-option:disabled { cursor: not-allowed; opacity: 0.6; }
+        
+        /* Estados de respuesta */
+        .correct { 
+            background-color: #bbf7d0 !important; 
+            border-color: #22c55e !important; 
+            color: #14532d !important; 
+            font-weight: 600;
+        }
+        .incorrect { 
+            background-color: #fecaca !important; 
+            border-color: #ef4444 !important; 
+            color: #7f1d1d !important; 
+            opacity: 0.8;
+        }
+
+        /* Animaciones */
+        .fade-in { animation: fadeIn 0.4s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body class="flex flex-col min-h-screen">
+
+    <!-- Navbar -->
+    <nav class="bg-emerald-900 text-white sticky top-0 z-50 shadow-md">
+        <div class="max-w-4xl mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <div class="bg-emerald-600 p-2 rounded-lg">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="font-bold text-lg leading-tight">UML & C# Theory</h1>
+                    <p class="text-xs text-emerald-200">Interpretación de Diagramas</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-4">
+                <div class="w-32 bg-emerald-800 h-2 rounded-full overflow-hidden hidden sm:block">
+                    <div id="progress-bar" class="bg-emerald-400 h-full transition-all duration-500" style="width: 0%"></div>
+                </div>
+                <div class="font-code text-sm bg-emerald-800 px-3 py-1 rounded-full border border-emerald-700">
+                    <span id="q-idx">1</span>/30
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="flex-grow max-w-3xl mx-auto w-full p-4 md:p-8 flex flex-col justify-center">
+
+        <!-- QUIZ AREA -->
+        <div id="quiz-card" class="quiz-card fade-in">
+            <div class="p-6 md:p-10">
+                
+                <!-- Categoría -->
+                <div class="mb-4">
+                    <span id="q-category" class="inline-block px-3 py-1 bg-emerald-100 text-emerald-800 text-xs font-bold rounded-full uppercase tracking-wider">Conceptos Básicos</span>
+                </div>
+
+                <!-- Pregunta -->
+                <h2 id="question-text" class="text-xl md:text-2xl font-bold text-slate-800 leading-snug mb-8">
+                    Cargando pregunta...
+                </h2>
+
+                <!-- Opciones -->
+                <div id="options-grid" class="grid grid-cols-1 gap-3 mb-8">
+                    <!-- JS generará los botones -->
+                </div>
+
+                <!-- Feedback Area -->
+                <div id="feedback-area" class="hidden rounded-xl bg-slate-50 border border-slate-200 p-5 mb-6 flex gap-4 items-start fade-in">
+                    <div id="feedback-icon" class="text-3xl flex-shrink-0">💡</div>
+                    <div>
+                        <h3 class="font-bold text-sm text-slate-500 uppercase mb-1">Explicación</h3>
+                        <p id="feedback-text" class="text-sm text-slate-700 leading-relaxed"></p>
+                    </div>
+                </div>
+
+                <!-- Botón Siguiente -->
+                <div class="flex justify-end">
+                    <button id="next-btn" onclick="nextQuestion()" class="hidden px-8 py-3 bg-emerald-700 text-white rounded-xl font-bold hover:bg-emerald-800 transition shadow-lg transform active:scale-95 flex items-center gap-2">
+                        Siguiente
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clip-rule="evenodd" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- RESULTADOS -->
+        <div id="results-card" class="hidden quiz-card p-8 text-center fade-in">
+            <div class="w-24 h-24 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-6 text-5xl">
+                🎓
+            </div>
+            <h2 class="text-3xl font-bold text-slate-900 mb-2">Evaluación Finalizada</h2>
+            <p class="text-slate-500 mb-8">Has completado el módulo teórico.</p>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center mb-10">
+                <div class="bg-slate-50 p-6 rounded-xl border border-slate-100">
+                    <div class="text-sm text-slate-400 uppercase font-bold tracking-wider mb-2">Tu Puntuación</div>
+                    <div class="text-6xl font-bold text-emerald-600 tracking-tight" id="final-score">0</div>
+                    <div class="text-slate-400 text-sm mt-1">de 30 preguntas</div>
+                </div>
+                <div class="h-48 w-full flex justify-center relative">
+                    <canvas id="resultsChart"></canvas>
+                </div>
+            </div>
+
+            <p id="final-message" class="text-lg font-medium text-slate-800 mb-8"></p>
+
+            <button onclick="location.reload()" class="w-full sm:w-auto px-8 py-3 bg-emerald-600 text-white rounded-xl font-bold hover:bg-emerald-700 transition shadow-md">
+                Repetir Test
+            </button>
+        </div>
+
+    </main>
+
+    <footer class="py-6 text-center text-xs text-emerald-700 opacity-60">
+        <p>Herramienta Educativa C# & UML</p>
+    </footer>
+
+    <!-- LÓGICA -->
+    <script>
+        // --- BASE DE DATOS DE 30 PREGUNTAS TEÓRICAS ---
+        const quizData = [
+            // BLOQUE 1: Visibilidad y Miembros
+            {
+                cat: "Simbología Básica",
+                q: "¿Qué modificador de acceso en C# representa el símbolo '+' en UML?",
+                opts: ["private", "public", "protected", "internal"],
+                correct: 1,
+                hint: "El símbolo '+' indica que el miembro es accesible por todos."
+            },
+            {
+                cat: "Simbología Básica",
+                q: "¿Qué modificador de acceso en C# representa el símbolo '-' en UML?",
+                opts: ["private", "public", "protected", "static"],
+                correct: 0,
+                hint: "El símbolo '-' indica restricción total, solo visible dentro de la clase."
+            },
+            {
+                cat: "Simbología Básica",
+                q: "¿Qué modificador de acceso en C# representa el símbolo '#' en UML?",
+                opts: ["internal", "public", "protected", "private"],
+                correct: 2,
+                hint: "El '#' permite acceso a la clase y a sus herederos (familia)."
+            },
+            {
+                cat: "Simbología Básica",
+                q: "Si un atributo en UML está subrayado (ej: <u>Contador</u>), ¿qué significa en C#?",
+                opts: ["Es una constante (const).", "Es estático (static).", "Es de solo lectura (readonly).", "Es abstracto."],
+                correct: 1,
+                hint: "El subrayado indica que el miembro pertenece a la clase, no a la instancia."
+            },
+            {
+                cat: "Simbología Básica",
+                q: "Si el nombre de una clase en UML está en cursiva (itálica), ¿qué significa?",
+                opts: ["Es una interfaz.", "Es una clase estática.", "Es una clase abstracta.", "Es una enumeración."],
+                correct: 2,
+                hint: "La cursiva indica que el concepto está incompleto y no se puede instanciar directamente."
+            },
+            
+            // BLOQUE 2: Relaciones
+            {
+                cat: "Relaciones",
+                q: "¿Qué símbolo UML representa la Herencia en C# (sintaxis `:`)?",
+                opts: ["Línea continua con triángulo vacío.", "Línea discontinua con flecha.", "Rombo relleno.", "Rombo vacío."],
+                correct: 0,
+                hint: "Busca la flecha grande y vacía que señala al 'Padre'."
+            },
+            {
+                cat: "Relaciones",
+                q: "¿Qué significa una línea discontinua con un triángulo vacío (Realización)?",
+                opts: ["Herencia de clase.", "Implementación de interfaz.", "Dependencia.", "Asociación."],
+                correct: 1,
+                hint: "Es como la herencia, pero el contrato es punteado porque no tiene código base."
+            },
+            {
+                cat: "Relaciones",
+                q: "¿Qué relación implica un Rombo Relleno (Negro) y cómo afecta al código?",
+                opts: ["Agregación (independientes).", "Composición (ciclo de vida dependiente).", "Asociación simple.", "Herencia."],
+                correct: 1,
+                hint: "El rombo negro es 'fuerte'. Si muere el todo, mueren las partes."
+            },
+            {
+                cat: "Relaciones",
+                q: "¿Qué relación implica un Rombo Vacío (Blanco)?",
+                opts: ["Composición.", "Agregación (referencia débil).", "Herencia.", "Realización."],
+                correct: 1,
+                hint: "Las partes pueden sobrevivir si el contenedor desaparece (ej: Jugadores en un Equipo)."
+            },
+            {
+                cat: "Relaciones",
+                q: "¿Qué significa una línea discontinua con flecha abierta (Dependencia)?",
+                opts: ["Uso temporal ('uses-a').", "Propiedad de campo ('has-a').", "Herencia ('is-a').", "Implementación."],
+                correct: 0,
+                hint: "Indica que una clase usa a otra momentáneamente (ej: como parámetro), no la guarda."
+            },
+
+            // BLOQUE 3: Interpretación Código
+            {
+                cat: "De UML a Código",
+                q: "Si UML muestra una asociación con multiplicidad `1..*`, ¿qué estructura usas en C#?",
+                opts: ["Una variable simple (int).", "Una colección (List, Array).", "Un tipo nullable.", "Una constante."],
+                correct: 1,
+                hint: "El asterisco (*) significa 'muchos', por lo que necesitas una lista o array."
+            },
+            {
+                cat: "De UML a Código",
+                q: "Si UML muestra `0..1`, ¿cómo se traduce mejor a C#?",
+                opts: ["Tipo obligatorio.", "Tipo Nullable (Tipo?).", "Colección.", "Static."],
+                correct: 1,
+                hint: "El cero indica que puede no existir (null)."
+            },
+            {
+                cat: "De UML a Código",
+                q: "¿Qué estereotipo UML se traduce como `enum` en C#?",
+                opts: ["<<struct>>", "<<enumeration>>", "<<utility>>", "<<interface>>"],
+                correct: 1,
+                hint: "Es bastante literal."
+            },
+            {
+                cat: "De UML a Código",
+                q: "¿Cómo se representa un método abstracto en UML?",
+                opts: ["Texto subrayado.", "Texto en cursiva.", "Texto en negrita.", "Con un asterisco."],
+                correct: 1,
+                hint: "Igual que la clase abstracta: inclinado."
+            },
+            {
+                cat: "De UML a Código",
+                q: "¿Qué significa `+ Calcular(v: int): void` en C#?",
+                opts: ["private void Calcular(int v)", "public int Calcular(void v)", "public void Calcular(int v)", "static void Calcular(int v)"],
+                correct: 2,
+                hint: "+ es public, v:int es el parámetro, :void es el retorno."
+            },
+
+            // BLOQUE 4: Conceptos Avanzados
+            {
+                cat: "Conceptos",
+                q: "¿Qué relación describe mejor la frase 'Un Pato ES UN Animal'?",
+                opts: ["Composición.", "Agregación.", "Herencia (Generalización).", "Asociación."],
+                correct: 2,
+                hint: "La clave es 'ES UN'."
+            },
+            {
+                cat: "Conceptos",
+                q: "¿Qué relación describe mejor 'Un Coche TIENE UN Motor' (y el motor es vital)?",
+                opts: ["Herencia.", "Composición.", "Dependencia.", "Realización."],
+                correct: 1,
+                hint: "Es una relación de posesión fuerte."
+            },
+            {
+                cat: "Conceptos",
+                q: "¿Qué relación describe 'Un Profesor USA un Bolígrafo' (para firmar)?",
+                opts: ["Dependencia.", "Composición.", "Herencia.", "Agregación."],
+                correct: 0,
+                hint: "El profesor no está hecho de bolígrafos, solo lo usa un momento."
+            },
+            {
+                cat: "Simbología",
+                q: "¿Qué estereotipo se usa para representar una `struct` de C# en UML?",
+                opts: ["<<class>>", "<<struct>>", "<<datatype>>", "<<value>>"],
+                correct: 1,
+                hint: "Generalmente se usa el estereotipo con el mismo nombre."
+            },
+            {
+                cat: "Simbología",
+                q: "¿Qué símbolo representa el modificador `internal` (o package) en UML?",
+                opts: ["-", "+", "#", "~ (virgulilla)"],
+                correct: 3,
+                hint: "Es la 'ola' o virgulilla."
+            },
+
+            // BLOQUE 5: Mix Final
+            {
+                cat: "Repaso",
+                q: "En C#, ¿cuál es la diferencia entre implementar interfaz (línea punteada) y heredar clase (línea continua)?",
+                opts: ["No hay diferencia.", "Heredar clase incluye código base; Interfaz es solo contrato.", "La interfaz permite modificadores privados.", "La clase permite herencia múltiple."],
+                correct: 1,
+                hint: "La clase te da la 'carne', la interfaz solo el 'esqueleto'."
+            },
+            {
+                cat: "Repaso",
+                q: "¿Qué significa la barra inclinada `/` antes de un atributo en UML (ej: `/Edad`)?",
+                opts: ["Atributo privado.", "Atributo derivado (calculado).", "Atributo estático.", "Atributo opcional."],
+                correct: 1,
+                hint: "Significa que su valor se calcula a partir de otros datos (ej: calcular Edad usando FechaNacimiento)."
+            },
+            {
+                cat: "Repaso",
+                q: "¿Cómo se llama la flecha simple `->` sin rombos?",
+                opts: ["Asociación (Navegabilidad).", "Dependencia.", "Herencia.", "Clase."],
+                correct: 0,
+                hint: "Indica quién conoce a quién (referencia)."
+            },
+            {
+                cat: "Repaso",
+                q: "Si una clase se marca como `{leaf}` en UML, ¿qué modificador C# aplica?",
+                opts: ["static", "abstract", "sealed", "public"],
+                correct: 2,
+                hint: "Leaf significa 'hoja', el final de la rama. Nadie puede heredar de ella."
+            },
+            {
+                cat: "Repaso",
+                q: "¿Qué es una interfaz en UML?",
+                opts: ["Una clase con todos los métodos implementados.", "Una colección de operaciones sin implementación (contrato).", "Una clase padre.", "Un diagrama de objetos."],
+                correct: 1,
+                hint: "Es una lista de promesas que la clase debe cumplir."
+            },
+            {
+                cat: "Repaso",
+                q: "¿Qué indica la multiplicidad `1`?",
+                opts: ["Opcional.", "Obligatorio (exactamente uno).", "Muchos.", "Ninguno."],
+                correct: 1,
+                hint: "Ni cero, ni dos. Solo uno."
+            },
+            {
+                cat: "Repaso",
+                q: "En un diagrama, los atributos suelen ir en...",
+                opts: ["La primera sección.", "La segunda sección.", "La tercera sección.", "Fuera de la caja."],
+                correct: 1,
+                hint: "1. Nombre, 2. Atributos, 3. Métodos."
+            },
+            {
+                cat: "Repaso",
+                q: "En un diagrama, los métodos u operaciones van en...",
+                opts: ["La primera sección.", "La segunda sección.", "La tercera sección.", "No se ponen."],
+                correct: 2,
+                hint: "Abajo del todo."
+            },
+            {
+                cat: "Repaso",
+                q: "¿Qué significa que la asociación sea bidireccional (sin flechas o dos flechas)?",
+                opts: ["Nadie se conoce.", "Ambas clases se conocen entre sí (referencia circular).", "Es herencia.", "Es error."],
+                correct: 1,
+                hint: "A tiene referencia a B, y B tiene referencia a A."
+            },
+            {
+                cat: "Repaso",
+                q: "Para representar una propiedad C# `{ get; set; }` en UML, ¿qué es lo más común?",
+                opts: ["No se puede.", "Usar un atributo público o métodos get/set explícitos.", "Usar herencia.", "Usar línea punteada."],
+                correct: 1,
+                hint: "UML puro no tiene 'propiedades', son atributos o pares de métodos."
+            }
+        ];
+
+        // --- LÓGICA DE ESTADO ---
+        let currentQ = 0;
+        let score = 0;
+        
+        const ui = {
+            qText: document.getElementById('question-text'),
+            options: document.getElementById('options-grid'),
+            feedback: document.getElementById('feedback-area'),
+            feedbackText: document.getElementById('feedback-text'),
+            next: document.getElementById('next-btn'),
+            card: document.getElementById('quiz-card'),
+            results: document.getElementById('results-card'),
+            idx: document.getElementById('q-idx'),
+            bar: document.getElementById('progress-bar'),
+            final: document.getElementById('final-score'),
+            finalMsg: document.getElementById('final-message'),
+            cat: document.getElementById('q-category')
+        };
+
+        function startQuiz() {
+            currentQ = 0; score = 0; 
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            const data = quizData[currentQ];
+            
+            // UI Reset
+            ui.feedback.classList.add('hidden');
+            ui.next.classList.add('hidden');
+            ui.options.innerHTML = '';
+            
+            // Textos
+            ui.cat.innerText = data.cat;
+            ui.qText.innerText = data.q;
+            ui.idx.innerText = currentQ + 1;
+            ui.bar.style.width = `${((currentQ) / quizData.length) * 100}%`;
+
+            // Opciones
+            data.opts.forEach((opt, i) => {
+                const btn = document.createElement('button');
+                btn.className = "btn-option w-full p-4 rounded-xl text-left text-slate-700 font-medium shadow-sm flex items-center justify-between group";
+                btn.innerHTML = `<span>${opt}</span><span class="opacity-0 group-hover:opacity-100 transition-opacity text-emerald-600">➜</span>`;
+                btn.onclick = () => checkAnswer(i, btn);
+                ui.options.appendChild(btn);
+            });
+        }
+
+        function checkAnswer(i, btn) {
+            const data = quizData[currentQ];
+            const allBtns = ui.options.querySelectorAll('button');
+            
+            // Bloquear todos
+            allBtns.forEach(b => b.disabled = true);
+            
+            if(i === data.correct) {
+                btn.classList.add('correct');
+                score++;
+                ui.feedbackText.innerHTML = `<strong class="text-emerald-700">¡Correcto!</strong> ${data.hint}`;
+            } else {
+                btn.classList.add('incorrect');
+                allBtns[data.correct].classList.add('correct');
+                ui.feedbackText.innerHTML = `<strong class="text-red-700">Incorrecto.</strong> ${data.hint}`;
+            }
+            ui.feedback.classList.remove('hidden');
+            ui.next.classList.remove('hidden');
+        }
+
+        function nextQuestion() {
+            currentQ++;
+            if(currentQ < quizData.length) loadQuestion();
+            else showResults();
+        }
+
+        function showResults() {
+            ui.card.classList.add('hidden');
+            ui.results.classList.remove('hidden');
+            ui.final.innerText = score;
+            
+            // Mensaje final
+            const pct = (score / quizData.length) * 100;
+            if(pct >= 90) ui.finalMsg.innerText = "¡Excelente! Eres un arquitecto de software. 🏛️";
+            else if(pct >= 70) ui.finalMsg.innerText = "Muy bien. Tienes los conceptos claros. 📐";
+            else ui.finalMsg.innerText = "Sigue repasando la simbología básica. 📚";
+
+            // Gráfico
+            new Chart(document.getElementById('resultsChart').getContext('2d'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['Aciertos', 'Fallos'],
+                    datasets: [{
+                        data: [score, quizData.length - score],
+                        backgroundColor: ['#10b981', '#f1f5f9'],
+                        borderWidth: 0,
+                        hoverOffset: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'bottom', labels: { usePointStyle: true } } },
+                    cutout: '75%'
+                }
+            });
+        }
+
+        // Iniciar
+        startQuiz();
+    </script>
+</body>
+</html>
