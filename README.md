@@ -1,2 +1,2 @@
-# DAMv-POO
+# POO
 Diagrama de clases y C#
