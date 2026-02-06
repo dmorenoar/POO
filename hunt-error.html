@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Repte C# - Troba l'Error</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+
+    <!-- Estil visual net amb mode fosc per al codi -->
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; color: #1f2937; }
+        .font-code { font-family: 'JetBrains Mono', monospace; }
+        
+        /* Estil bloc de codi (Tipus VS Code) */
+        .code-block {
+            background-color: #1e1e1e;
+            color: #d4d4d4;
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            overflow-x: auto;
+            border: 1px solid #333;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        /* Simulació de Syntax Highlighting */
+        .kwd { color: #569cd6; font-weight: bold; } /* Keywords */
+        .typ { color: #4ec9b0; } /* Types */
+        .str { color: #ce9178; } /* Strings */
+        .cmt { color: #6a9955; font-style: italic; } /* Comments */
+        .num { color: #b5cea8; } /* Numbers */
+        
+        /* Animacions */
+        .fade-in { animation: fadeIn 0.3s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .btn-option {
+            transition: all 0.2s;
+            text-align: left;
+        }
+        .btn-option:hover:not(:disabled) {
+            transform: translateX(4px);
+            border-color: #3b82f6;
+        }
+        .btn-option:disabled { cursor: not-allowed; opacity: 0.7; }
+        
+        .correct { background-color: #dcfce7 !important; border-color: #22c55e !important; color: #166534; }
+        .incorrect { background-color: #fee2e2 !important; border-color: #ef4444 !important; color: #991b1b; }
+    </style>
+</head>
+<body class="flex flex-col min-h-screen">
+
+    <!-- Capçalera -->
+    <header class="bg-slate-900 text-white py-4 shadow-lg">
+        <div class="max-w-4xl mx-auto px-4 flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <span class="text-2xl">🐛</span>
+                <div>
+                    <h1 class="text-xl font-bold">Caça d'Errors <span class="text-blue-400">C# i UML</span></h1>
+                    <p class="text-xs text-slate-400">Repte de Compilació i Lògica</p>
+                </div>
+            </div>
+            <div class="text-sm font-code bg-slate-800 px-3 py-1 rounded">
+                Pregunta <span id="q-idx">1</span>/<span id="q-total">30</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Zona Principal del Quiz -->
+    <main class="flex-grow max-w-4xl mx-auto w-full p-4 md:p-6 flex flex-col items-center justify-center">
+
+        <!-- CONTENIDOR DEL QUIZ -->
+        <div id="quiz-container" class="w-full bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden fade-in">
+            
+            <!-- Barra de Progrés -->
+            <div class="w-full bg-slate-100 h-2">
+                <div id="progress-bar" class="bg-blue-600 h-2 transition-all duration-300" style="width: 0%"></div>
+            </div>
+
+            <div class="p-6 md:p-8">
+                <!-- Text de la Pregunta -->
+                <h2 id="question-text" class="text-lg md:text-xl font-semibold text-slate-800 mb-6 leading-relaxed">
+                    Carregant pregunta...
+                </h2>
+
+                <!-- Vista de Codi -->
+                <div id="code-container" class="mb-8 hidden">
+                    <div class="flex items-center justify-between bg-[#252526] px-4 py-2 text-xs text-slate-400 border-b border-[#333] rounded-t-lg">
+                        <span>Main.cs</span>
+                        <span>C#</span>
+                    </div>
+                    <pre id="code-snippet" class="code-block rounded-t-none font-code"></pre>
+                </div>
+
+                <!-- Graella d'Opcions -->
+                <div id="options-grid" class="grid grid-cols-1 gap-3 mb-6">
+                    <!-- Botons generats per JS -->
+                </div>
+
+                <!-- Àrea de Feedback -->
+                <div id="feedback-area" class="hidden p-4 rounded-lg bg-slate-50 border border-slate-200 mb-6 fade-in">
+                    <div class="flex items-start gap-3">
+                        <div id="feedback-icon" class="text-2xl mt-1"></div>
+                        <div>
+                            <h3 id="feedback-title" class="font-bold text-sm uppercase mb-1"></h3>
+                            <p id="feedback-text" class="text-slate-700 text-sm leading-relaxed"></p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Controls -->
+                <div class="flex justify-end">
+                    <button id="next-btn" onclick="nextQuestion()" class="hidden px-6 py-2 bg-slate-900 text-white rounded-lg font-semibold hover:bg-slate-800 transition shadow-lg flex items-center gap-2">
+                        Següent Pregunta <span>→</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- CONTENIDOR DE RESULTATS (Ocult inicialment) -->
+        <div id="results-container" class="hidden w-full max-w-2xl bg-white rounded-xl shadow-xl border border-slate-200 p-8 text-center fade-in">
+            <div class="text-6xl mb-4">🏆</div>
+            <h2 class="text-3xl font-bold text-slate-800 mb-2">Examen Completat!</h2>
+            <p class="text-slate-600 mb-8">Vegem què tal se't dona depurar codi.</p>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center mb-8">
+                <div class="text-center">
+                    <div class="text-5xl font-bold text-blue-600 mb-2" id="final-score">0/0</div>
+                    <p class="text-sm text-slate-500 uppercase tracking-wide font-semibold">Puntuació Final</p>
+                </div>
+                <div class="h-48 w-full flex justify-center">
+                    <canvas id="resultsChart"></canvas>
+                </div>
+            </div>
+
+            <p id="final-message" class="text-lg font-medium text-slate-700 mb-8"></p>
+
+            <button onclick="location.reload()" class="px-8 py-3 bg-blue-600 text-white rounded-lg font-bold hover:bg-blue-700 transition shadow-md">
+                Tornar a Intentar
+            </button>
+        </div>
+
+    </main>
+
+    <!-- Peu de pàgina -->
+    <footer class="bg-white border-t border-slate-200 py-6 mt-auto">
+        <div class="max-w-4xl mx-auto px-4 text-center text-xs text-slate-500">
+            <p>Generat amb finalitats educatives • C# & UML Debugging Quiz</p>
+        </div>
+    </footer>
+
+    <!-- LÒGICA JAVASCRIPT -->
+    <script>
+        // --- DADES DE LES PREGUNTES ---
+        const quizData = [
+            {
+                q: "Analitza el següent codi amb membres estàtics. Per què falla la compilació a l'última línia?",
+                code: `public class Jugador 
+{
+    public static int Comptador = 0;
+    public string Nom;
+}
+
+var p1 = new Jugador();
+p1.Nom = "Mario";
+p1.Comptador = 1; // <--- ERROR AQUÍ`,
+                options: [
+                    "El camp 'Comptador' hauria de ser una propietat.",
+                    "No es pot accedir a un membre estàtic des d'una instància (p1). S'ha d'usar Jugador.Comptador.",
+                    "Falta inicialitzar l'objecte p1.",
+                    "Els membres estàtics són només de lectura per defecte."
+                ],
+                correct: 1,
+                hint: "Els membres 'static' pertanyen a la classe (al plànol), no a l'objecte concret."
+            },
+            {
+                q: "Quin error hi ha en aquest intent d'usar una propietat auto-implementada?",
+                code: `public class Enemic 
+{
+    public int Vida { get; set; }
+
+    public void Resetear() 
+    {
+        _vida = 100; // Intent d'accedir al camp de suport
+    }
+}`,
+                options: [
+                    "El camp '_vida' no existeix en el context actual (és invisible).",
+                    "Falta 'this' abans de '_vida'.",
+                    "La propietat 'Vida' ha de ser privada.",
+                    "No es pot assignar un valor enter a una propietat."
+                ],
+                correct: 0,
+                hint: "El compilador genera el 'backing field' ocult, però no et diu com es diu."
+            },
+            {
+                q: "Ús de 'init'. Per què marca error l'última línia?",
+                code: `public class Config 
+{
+    public string Titol { get; init; }
+}
+
+var c = new Config { Titol = "Joc" };
+c.Titol = "Nou Títol"; // <--- ERROR`,
+                options: [
+                    "Falta un 'set' tradicional a la propietat.",
+                    "Les propietats 'init' són immutables després de la inicialització de l'objecte.",
+                    "La cadena de text ha de ser constant.",
+                    "No s'ha usat el constructor per defecte."
+                ],
+                correct: 1,
+                hint: "'Init' significa 'inicialització'. Després de néixer, l'objecte es tanca."
+            },
+            {
+                q: "Què està malament en la declaració d'aquesta classe derivada?",
+                code: `public class Arma 
+{
+    public Arma(int damage) { ... }
+}
+
+public class Espasa : Arma 
+{
+    // La classe està buida
+}`,
+                options: [
+                    "Espasa ha d'implementar un mètode abstracte.",
+                    "Espasa necessita un constructor que cridi a 'base(int)' perquè el pare no té constructor buit.",
+                    "No es pot heretar d'una classe concreta.",
+                    "Falta la paraula clau 'override'."
+                ],
+                correct: 1,
+                hint: "El pare exigeix un argument per néixer. El fill l'hi ha de proporcionar."
+            },
+            {
+                q: "Per què aquest codi usant `?.` no compila?",
+                code: `string nom = null;
+int longitud = nom?.Length;`,
+                options: [
+                    "Llança excepció NullReference.",
+                    "No es pot assignar 'null' a un 'int'. Hauria de ser 'int?'.",
+                    "L'operador hauria de ser '??'.",
+                    "Falten parèntesis a Length."
+                ],
+                correct: 1,
+                hint: "Si 'nom' és null, l'expressió retorna null. Un int normal no accepta null."
+            },
+            {
+                q: "Identifica l'error en aquest mètode 'Expression-bodied':",
+                code: `public int Sumar(int a, int b) => return a + b;`,
+                options: [
+                    "Sobra la paraula clau 'return'.",
+                    "Falten les claus { }.",
+                    "Ha de retornar void.",
+                    "L'operador => només serveix per a lambdas."
+                ],
+                correct: 0,
+                hint: "La fletxa => ja implica retorn implícit."
+            },
+            {
+                q: "Error amb l'operador `??=`.",
+                code: `int vides = 0;
+vides ??= 3;`,
+                options: [
+                    "La variable 'vides' ja té valor.",
+                    "L'operador només funciona amb tipus nullable. 'int' no pot ser null.",
+                    "Hauria d'escriure's vides = vides ?? 3.",
+                    "Falta el punt i coma."
+                ],
+                correct: 1,
+                hint: "No pots comprovar si un int és null, perquè mai ho serà."
+            },
+            {
+                q: "Què falla en aquesta implementació d'interfície?",
+                code: `interface IAtacant { void Atacar(); }
+
+public class Guerrer : IAtacant 
+{
+    void Atacar() { Console.WriteLine("Zas!"); }
+}`,
+                options: [
+                    "El mètode 'Atacar' a la classe ha de ser 'public'.",
+                    "Falta 'override'.",
+                    "Les interfícies no poden tenir mètodes void.",
+                    "Guerrer ha de ser abstracta."
+                ],
+                correct: 0,
+                hint: "Els membres de classe són 'private' per defecte. La interfície exigeix accés públic."
+            },
+            {
+                q: "Sobreescrivint ToString. Què hi falta?",
+                code: `public class Carta 
+{
+    public string Pal; 
+    public string ToString() => $"Carta: {Pal}"; 
+}`,
+                options: [
+                    "ToString ha de retornar void.",
+                    "Falta la paraula clau 'override'.",
+                    "No es pot usar fletxa amb ToString.",
+                    "Pal és un camp i no es pot interpolar."
+                ],
+                correct: 1,
+                hint: "ToString ve de la classe base 'object'. Per canviar-lo, has de fer 'override'."
+            },
+            {
+                q: "Per què no podem instanciar això?",
+                code: `public abstract class Vehicle { }
+
+var v = new Vehicle();`,
+                options: [
+                    "Falten parèntesis.",
+                    "No es poden crear instàncies de classes abstractes.",
+                    "Vehicle no té constructor.",
+                    "La classe no té mètodes."
+                ],
+                correct: 1,
+                hint: "Una classe abstracta és una idea incompleta, no un objecte tangible."
+            },
+            {
+                q: "Crida a mètode per defecte d'interfície. Per què falla?",
+                code: `interface ILlum { void Encen() => Console.Write("ON"); }
+class Bombeta : ILlum { }
+
+Bombeta b = new Bombeta();
+b.Encen(); // <--- ERROR`,
+                options: [
+                    "Bombeta ha d'implementar Encen.",
+                    "Els mètodes per defecte només es veuen a través de la interfície: ((ILlum)b).Encen().",
+                    "La interfície ha de ser pública.",
+                    "Falta punt i coma."
+                ],
+                correct: 1,
+                hint: "La classe Bombeta no 'hereta' el mètode, està a la interfície i només es veu des d'allà."
+            },
+            {
+                q: "Composició vs Agregació. Què és això realment?",
+                code: `class Cotxe 
+{
+    private Motor _motor;
+    public Cotxe() { _motor = new Motor(); }
+}`,
+                options: [
+                    "Agregació perquè és privat.",
+                    "Composició, perquè el Cotxe crea (i controla la vida d)el motor.",
+                    "Herència.",
+                    "Codi invàlid."
+                ],
+                correct: 1,
+                hint: "Si el contenidor fa el 'new', és l'amo de la vida de l'objecte (Composició)."
+            },
+            {
+                q: "Quin error de tipus hi ha amb aquest Enum?",
+                code: `enum Estat { Idle, Run }
+Estat actual = 1;`,
+                options: [
+                    "Necessites un cast explícit `(Estat)1`.",
+                    "L'1 no existeix a l'Enum.",
+                    "Sintaxi invàlida.",
+                    "Els Enums són strings."
+                ],
+                correct: 0,
+                hint: "C# és de tipatge fort. Int != Enum sense permís."
+            },
+            {
+                q: "Per què falla aquest override?",
+                code: `class Base { public void Saludar() {} }
+class Filla : Base { public override void Saludar() {} }`,
+                options: [
+                    "El mètode Base ha de ser 'virtual' o 'abstract'.",
+                    "No es pot canviar comportament heretat.",
+                    "Falta base.Saludar().",
+                    "Filla ha de ser abstracta."
+                ],
+                correct: 0,
+                hint: "El pare no ha donat permís (virtual) per modificar-lo."
+            },
+            {
+                q: "L'UML mostra `+ Nom` subratllat. Què falta al codi?",
+                code: `public class Usuari 
+{
+    public string Nom;
+}`,
+                options: [
+                    "Falta el modificador 'static'.",
+                    "Hauria de ser propietat.",
+                    "Hauria de ser privat.",
+                    "Falta inicialitzar."
+                ],
+                correct: 0,
+                hint: "Subratllat en UML = Static."
+            },
+            // --- 15 Preguntes Més ---
+            {
+                q: "Modificant propietat init en mètode. Per què falla?",
+                code: `public class Heroi {
+    public int Nivell { get; init; }
+    public void Pujar() { Nivell++; } // ERROR
+}`,
+                options: ["Només modificable a la mateixa classe.", "Init és immutable després de la construcció.", "Falta set.", "Operador ++ invàlid."],
+                correct: 1,
+                hint: "Init només funciona en néixer."
+            },
+            {
+                q: "Error en definició d'Enum.",
+                code: `enum Tipus : string { A = "A" }`,
+                options: ["Falten cometes.", "Enum no pot heretar de string (només enters).", "No assignar valors.", "Sintaxi incorrecta."],
+                correct: 1,
+                hint: "Els enums són números disfressats."
+            },
+            {
+                q: "Què sobra en aquesta interfície?",
+                code: `interface IEnemic {
+    int Dany; // ERROR
+    void Atacar();
+}`,
+                options: ["Falta tipus retorn.", "Les interfícies no poden tenir camps.", "Falta cos.", "Falta public."],
+                correct: 1,
+                hint: "Les interfícies defineixen comportament, no guarden dades."
+            },
+            {
+                q: "Assignació amb `?.`.",
+                code: `Jugador p = null;
+p?.Punts = 100; // ERROR`,
+                options: ["p és null.", "No es pot assignar al resultat d'una expressió condicional.", "Falta inicialitzar.", "Usar ??."],
+                correct: 1,
+                hint: "El costat esquerre d'una assignació ha de ser una variable segura."
+            },
+            {
+                q: "Implementació explícita. On és l'error?",
+                code: `class Pocio : IItem {
+    public void IItem.Usar() { } // ERROR
+}`,
+                options: ["Falta cos.", "La implementació explícita no pot ser public.", "Nom incorrecte.", "Classe abstracta."],
+                correct: 1,
+                hint: "És un mètode secret de la interfície, no accessible directament des de la classe."
+            },
+            {
+                q: "Sobrecàrrega d'operadors ==.",
+                code: `static bool operator ==(A x, A y) { ... }
+// Falta alguna cosa...`,
+                options: ["Retornar void.", "Obligatori sobrecarregar també '!='.", "Cridar a Equals.", "Params object."],
+                correct: 1,
+                hint: "Els operadors de comparació venen en parelles."
+            },
+            {
+                q: "Sobrecàrrega invàlida d'Equals.",
+                code: `public override bool Equals(Jugador j) { ... }`,
+                options: ["Retornar int.", "La signatura ha de ser Equals(object obj).", "Falta HashCode.", "No es pot."],
+                correct: 1,
+                hint: "Override requereix signatura exacta respecte al mètode pare."
+            },
+            {
+                q: "Redundància en constants.",
+                code: `public static const double PI = 3.14;`,
+                options: ["PI majúscula.", "No doubles.", "'const' ja és implícitament estàtic.", "Inicialitzar."],
+                correct: 2,
+                hint: "No diguis 'static' dues vegades si ja és 'const'."
+            },
+            {
+                q: "Herència prohibida.",
+                code: `sealed class Admin {}
+class Super : Admin {}`,
+                options: ["Constructor.", "No es pot heretar de sealed.", "Super sealed.", "Override."],
+                correct: 1,
+                hint: "Sealed tanca la classe amb clau."
+            },
+            {
+                q: "Mètode abstracte privat.",
+                code: `abstract class Base {
+    abstract private void Executar();
+}`,
+                options: ["Abstract no pot ser private.", "Falta cos.", "Void abstract.", "Retorn."],
+                correct: 0,
+                hint: "Com l'implementaran els fills si és privat?"
+            },
+            {
+                q: "Herència de structs.",
+                code: `struct P2 {}
+struct P3 : P2 {}`,
+                options: ["P2 ha de ser classe.", "Structs no suporten herència.", "Falta public.", "Interfície."],
+                correct: 1,
+                hint: "Structs són tipus segellats per definició."
+            },
+            {
+                q: "Modificant readonly.",
+                code: `readonly int Max = 10;
+void Change() { Max = 20; }`,
+                options: ["Static.", "Readonly només assignable al constructor.", "This.", "Const."],
+                correct: 1,
+                hint: "Només es pot canviar en néixer."
+            },
+            {
+                q: "Ús de params.",
+                code: `void Log(params string[] msg, int n) {}`,
+                options: ["Params no strings.", "Params ha de ser l'ÚLTIM paràmetre.", "Inicialitzar.", "Barreja tipus."],
+                correct: 1,
+                hint: "Params es menja la resta d'arguments, així que ha d'anar al final."
+            },
+            {
+                q: "Mètode d'extensió.",
+                code: `public class Utils {
+    public static void Log(this string s) {}
+}`,
+                options: ["La classe contenidora ha de ser static.", "Sobra this.", "Void.", "Namespace."],
+                correct: 0,
+                hint: "Les extensions requereixen una classe estàtica pura."
+            },
+            {
+                q: "Inferència var.",
+                code: `var x = null;`,
+                options: ["Var obsolet.", "No es pot inferir tipus de null.", "Variable local.", "Punt i coma."],
+                correct: 1,
+                hint: "Null no té identitat pròpia, el compilador no sap què és."
+            }
+        ];
+
+        // --- ESTAT ---
+        let currentQ = 0;
+        let score = 0;
+        
+        // --- ELEMENTS ---
+        const ui = {
+            qText: document.getElementById('question-text'),
+            codeContainer: document.getElementById('code-container'),
+            code: document.getElementById('code-snippet'),
+            options: document.getElementById('options-grid'),
+            feedbackArea: document.getElementById('feedback-area'),
+            feedbackTitle: document.getElementById('feedback-title'),
+            feedbackText: document.getElementById('feedback-text'),
+            feedbackIcon: document.getElementById('feedback-icon'),
+            nextBtn: document.getElementById('next-btn'),
+            quizContainer: document.getElementById('quiz-container'),
+            resultsContainer: document.getElementById('results-container'),
+            qIdx: document.getElementById('q-idx'),
+            progressBar: document.getElementById('progress-bar'),
+            finalScore: document.getElementById('final-score'),
+            finalMsg: document.getElementById('final-message')
+        };
+
+        // --- FUNCIONS ---
+        function startQuiz() {
+            currentQ = 0;
+            score = 0;
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            const data = quizData[currentQ];
+            
+            // Reinici UI
+            ui.feedbackArea.classList.add('hidden');
+            ui.nextBtn.classList.add('hidden');
+            ui.options.innerHTML = '';
+            ui.options.classList.remove('pointer-events-none');
+            
+            // Contingut
+            ui.qText.innerText = data.q;
+            ui.qIdx.innerText = currentQ + 1;
+            ui.progressBar.style.width = `${((currentQ) / quizData.length) * 100}%`;
+
+            // Codi
+            if (data.code) {
+                ui.codeContainer.classList.remove('hidden');
+                ui.code.innerHTML = syntaxHighlight(data.code);
+            } else {
+                ui.codeContainer.classList.add('hidden');
+            }
+
+            // Botons
+            data.options.forEach((opt, idx) => {
+                const btn = document.createElement('button');
+                btn.className = "btn-option w-full p-4 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-medium transition shadow-sm";
+                btn.innerText = opt;
+                btn.onclick = () => checkAnswer(idx, btn);
+                ui.options.appendChild(btn);
+            });
+        }
+
+        function checkAnswer(selectedIdx, btnElement) {
+            const data = quizData[currentQ];
+            const isCorrect = selectedIdx === data.correct;
+            
+            // Desactivar botons
+            ui.options.classList.add('pointer-events-none');
+            const allBtns = ui.options.querySelectorAll('button');
+            
+            // Ressaltar
+            if (isCorrect) {
+                btnElement.classList.add('correct');
+                score++;
+                showFeedback(true, "Correcte!", data.hint);
+            } else {
+                btnElement.classList.add('incorrect');
+                // Mostrar la correcta
+                allBtns[data.correct].classList.add('correct');
+                showFeedback(false, "Incorrecte", data.hint);
+            }
+
+            ui.nextBtn.classList.remove('hidden');
+        }
+
+        function showFeedback(isCorrect, title, text) {
+            ui.feedbackArea.classList.remove('hidden', 'bg-green-50', 'bg-red-50', 'border-green-200', 'border-red-200');
+            ui.feedbackTitle.classList.remove('text-green-800', 'text-red-800');
+            
+            if(isCorrect) {
+                ui.feedbackArea.classList.add('bg-green-50', 'border-green-200');
+                ui.feedbackTitle.innerText = title;
+                ui.feedbackTitle.classList.add('text-green-800');
+                ui.feedbackIcon.innerText = "✅";
+            } else {
+                ui.feedbackArea.classList.add('bg-red-50', 'border-red-200');
+                ui.feedbackTitle.innerText = title;
+                ui.feedbackTitle.classList.add('text-red-800');
+                ui.feedbackIcon.innerText = "❌";
+            }
+            ui.feedbackText.innerText = text;
+        }
+
+        function nextQuestion() {
+            currentQ++;
+            if (currentQ < quizData.length) {
+                loadQuestion();
+            } else {
+                showResults();
+            }
+        }
+
+        function showResults() {
+            ui.quizContainer.classList.add('hidden');
+            ui.resultsContainer.classList.remove('hidden');
+            
+            ui.finalScore.innerText = `${score}/${quizData.length}`;
+            
+            // Missatges
+            const pct = (score / quizData.length) * 100;
+            if (pct === 100) ui.finalMsg.innerText = "Increïble! Ets un compilador humà. 🤖";
+            else if (pct >= 80) ui.finalMsg.innerText = "Excel·lent treball! Domines C# gairebé a la perfecció.";
+            else if (pct >= 50) ui.finalMsg.innerText = "Bon intent. Repassa els conceptes de static i herència.";
+            else ui.finalMsg.innerText = "Continua practicant. El compilador és el teu amic, no el teu enemic.";
+
+            // Gràfic
+            const ctx = document.getElementById('resultsChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Encerts', 'Errors'],
+                    datasets: [{
+                        data: [score, quizData.length - score],
+                        backgroundColor: ['#2563eb', '#e2e8f0'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'bottom' } }
+                }
+            });
+        }
+
+        // Ressaltat de Sintaxi Simple
+        function syntaxHighlight(code) {
+            code = code.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+            
+            let html = code;
+            
+            // Protegir comentaris i strings
+            const comments = [];
+            html = html.replace(/\/\/.*/g, (match) => {
+                comments.push(match);
+                return `__CMT${comments.length-1}__`;
+            });
+
+            const strings = [];
+            html = html.replace(/"(?:[^"\\]|\\.)*"/g, (match) => {
+                strings.push(match);
+                return `__STR${strings.length-1}__`;
+            });
+
+            // Keywords & Types
+            html = html.replace(/\b(public|private|protected|internal|class|struct|interface|enum|static|void|int|string|bool|var|new|override|virtual|abstract|sealed|readonly|const|init|get|set|return|if|else|this|base|params)\b/g, '<span class="kwd">$1</span>');
+            html = html.replace(/\b(Jugador|Enemic|Config|Arma|Espasa|IAtacant|Guerrer|Carta|Vehicle|ILlum|Bombeta|Cotxe|Motor|Estat|Base|Filla|Usuari|Heroi|Tipus|IEnemic|Pocio|IItem|A|Utils|P2|P3)\b/g, '<span class="typ">$1</span>');
+
+            // Restaurar
+            html = html.replace(/__STR(\d+)__/g, (_, id) => `<span class="str">${strings[id]}</span>`);
+            html = html.replace(/__CMT(\d+)__/g, (_, id) => `<span class="cmt">${comments[id]}</span>`);
+
+            return html;
+        }
+
+        // Inici
+        startQuiz();
+
+    </script>
+</body>
+</html>
