@@ -1,10 +1,21 @@
 # 🦁 POO i UML: The Zoo
 
+[![Versió](https://img.shields.io/badge/versió-1.0.0-blue.svg)](https://github.com/dmorenoar/python-codex-smx)
+[![Estat](https://img.shields.io/badge/estat-ONLINE-brightgreen.svg)](https://dmorenoar.github.io/python-codex-smx/)
+
+**Plataforma interactiva d'aprenentatge de Python** dissenyada per al mòdul "Programació i Entorns de desenvolupament" en el cicle formatiu CFGS (Desenvolupament d'Aplicacions Multiplataforma perfil Videojocs i Oci digital).
+
 Guia interactiva per entendre la Programació Orientada a Objectes (POO) i la seva representació en UML.
+
+🌐 **[Veure aplicació en viu](https://dmorenoar.github.io/POO/)**
+
+---
 
 ## 📋 Descripció
 
 Aquest projecte és una pàgina web educativa dissenyada per a l'assignatura de Desenvolupament d'Aplicacions Multiplataforma (DAMV) de l'Institut Tecnològic de Barcelona. Ofereix una explicació visual i interactiva dels conceptes fonamentals de la POO utilitzant l'analogia d'un zoològic.
+
+---
 
 ## 🎯 Objectius d'Aprenentatge
 
