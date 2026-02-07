@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ITB - Arquitectura de Software (Zoo)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    
+    <style>
+        body { font-family: 'Inter', sans-serif; scroll-behavior: smooth; }
+        .font-code { font-family: 'JetBrains Mono', monospace; }
+        
+        /* Codi estil IDE */
+        pre.code-block {
+            background-color: #1e1e1e; /* VS Code Dark */
+            color: #d4d4d4;
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            font-size: 0.85rem;
+            overflow-x: auto;
+            border-left: 4px solid #3b82f6;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            line-height: 1.6;
+            white-space: pre; 
+            font-family: 'JetBrains Mono', monospace;
+        }
+        
+        /* Targetes UML */
+        .uml-card {
+            background-color: #fff;
+            border: 2px solid #334155;
+            color: #0f172a;
+            padding: 0;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            font-size: 0.8rem;
+            width: 160px;
+            position: absolute;
+            z-index: 20;
+        }
+        .uml-card.abstract { font-style: italic; }
+        
+        .uml-header { 
+            background-color: #f1f5f9; 
+            border-bottom: 1px solid #334155; 
+            font-weight: bold; 
+            text-align: center; 
+            padding: 0.5rem; 
+        }
+        .uml-section { 
+            border-bottom: 1px solid #cbd5e1; 
+            padding: 0.5rem; 
+            text-align: left;
+            line-height: 1.4;
+        }
+        .uml-section:last-child { border-bottom: none; }
+
+        /* Sintaxi C# */
+        .kwd { color: #569cd6; font-weight: bold; }
+        .typ { color: #4ec9b0; }
+        .str { color: #ce9178; }
+        .num { color: #b5cea8; }
+        .comment { color: #6a9955; font-style: italic; }
+        .mth { color: #dcdcaa; }
+
+        /* Fons Hero */
+        .header-bg {
+            background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%);
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800">
+
+    <!-- Navegació -->
+    <nav class="sticky top-0 z-50 bg-white/95 backdrop-blur border-b border-slate-200 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center gap-2">
+                    <span class="bg-blue-900 text-white px-2 py-1 rounded font-bold">ITB</span>
+                    <span class="font-bold text-slate-700">DAMV - Bloc 3</span>
+                </div>
+                <div class="hidden md:flex space-x-6 text-sm font-medium text-slate-600">
+                    <a href="#class" class="hover:text-blue-600 transition">La Classe</a>
+                    <a href="#inheritance" class="hover:text-blue-600 transition">Herència</a>
+                    <a href="#relations" class="hover:text-blue-600 transition">Relacions</a>
+                    <a href="#encapsulation" class="hover:text-blue-600 transition">Encapsulament</a>
+                    <a href="#diagrama" class="text-orange-600 font-bold hover:text-orange-700 transition">Diagrama Final</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero -->
+    <header class="header-bg text-white py-20">
+        <div class="max-w-5xl mx-auto px-4 text-center">
+            <div class="text-6xl mb-6">🦁</div>
+            <h1 class="text-4xl md:text-5xl font-bold mb-4">Arquitectura de Software: The Zoo</h1>
+            <p class="text-blue-100 text-lg max-w-2xl mx-auto">
+                Guia interactiva per entendre la Programació Orientada a Objectes i la seva representació en UML.
+            </p>
+            <div class="mt-8">
+                <a href="#practica" class="bg-emerald-500 text-white px-6 py-3 rounded-full font-bold shadow-lg hover:bg-emerald-600 transition">Anar als Exercicis</a>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-6xl mx-auto px-4 py-16 space-y-32">
+
+        <!-- 1. LA CLASSE -->
+        <section id="class" class="scroll-mt-24">
+            <div class="flex items-center gap-4 mb-8">
+                <div class="w-2 h-10 bg-blue-600 rounded"></div>
+                <div>
+                    <h2 class="text-3xl font-bold text-slate-900">1. La Classe: El Plànol</h2>
+                    <p class="text-slate-600">Definim les propietats específiques del Lleó.</p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-10 items-start">
+                <!-- Code -->
+                <div>
+                    <div class="flex justify-between items-end mb-2">
+                        <h3 class="font-bold text-slate-500 uppercase text-xs">Lion.cs</h3>
+                        <span class="text-xs bg-slate-200 px-2 py-1 rounded text-slate-600">C#</span>
+                    </div>
+<pre class="code-block">
+<span class="kwd">public class</span> <span class="typ">Lion</span> 
+{
+    <span class="comment">// 1. Atributs (Dades pròpies del Lleó)</span>
+    <span class="kwd">private</span> <span class="typ">double</span> _weight;
+    <span class="kwd">public</span> <span class="typ">string</span> Name;
+    <span class="kwd">private</span> <span class="typ">bool</span> _isHungry;
+
+    <span class="comment">// 2. Constructor</span>
+    <span class="kwd">public</span> Lion(<span class="typ">string</span> name, <span class="typ">double</span> weight) 
+    {
+        <span class="kwd">this</span>.Name = name;
+        <span class="kwd">this</span>._weight = weight;
+        <span class="kwd">this</span>._isHungry = <span class="kwd">true</span>;
+    }
+
+    <span class="comment">// 3. Mètodes (Comportament)</span>
+    
+    <span class="comment">// A. Void amb paràmetre</span>
+    <span class="kwd">public void</span> <span class="mth">Roar</span>(<span class="typ">int</span> volume) 
+    {
+        Console.WriteLine(<span class="str">"ROAAAR!!"</span>);
+    }
+
+    <span class="comment">// B. Amb retorn</span>
+    <span class="kwd">public</span> <span class="typ">double</span> <span class="mth">CalculateFood</span>()
+    {
+        <span class="comment">// Retorna kg de carn necessaris</span>
+        <span class="kwd">return</span> _weight * <span class="num">0.05</span>;
+    }
+}
+</pre>
+                </div>
+
+                <!-- UML -->
+                <div class="flex flex-col items-center justify-center h-full bg-slate-50 rounded-xl border border-slate-200 p-8 relative">
+                    <div class="uml-card" style="position: relative; width: 220px;">
+                        <div class="uml-header">Lion</div>
+                        <div class="uml-section">
+                            <div class="text-red-600 font-code">- weight : double</div>
+                            <div class="text-green-600 font-code">+ Name : string</div>
+                            <div class="text-red-600 font-code">- isHungry : bool</div>
+                        </div>
+                        <div class="uml-section">
+                            <div class="text-green-600 font-code leading-tight mb-1">+ Roar(volume: int) : void</div>
+                            <div class="text-green-600 font-code leading-tight">+ CalculateFood() : double</div>
+                        </div>
+                    </div>
+                    <div class="mt-8 text-sm text-slate-500 text-center max-w-xs">
+                        <p><strong>Estat del Lleó:</strong> Només el lleó té pes, nom i gana definits aquí.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 2. HERÈNCIA -->
+        <section id="inheritance" class="scroll-mt-24">
+            <div class="flex items-center gap-4 mb-8">
+                <div class="w-2 h-10 bg-purple-600 rounded"></div>
+                <div>
+                    <h2 class="text-3xl font-bold text-slate-900">2. Herència i Abstracció</h2>
+                    <p class="text-slate-600">La classe pare <code>Animal</code> defineix el mètode abstracte <code>Eat()</code>, que <code>Lion</code> <strong>està obligat</strong> a implementar.</p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
+                
+                <!-- Diagrama Herencia -->
+                <div class="relative bg-slate-50 rounded-xl border border-slate-200 h-[400px] mx-auto w-full max-w-md">
+                    <!-- SVG Lines (Manual Triangle) -->
+                    <svg class="absolute inset-0 w-full h-full pointer-events-none" style="z-index: 10;">
+                        <!-- Linia vertical -->
+                        <line x1="50%" y1="130" x2="50%" y2="240" stroke="#334155" stroke-width="2" />
+                        <!-- Triangle buit a dalt (Manual) -->
+                        <polygon points="50%,130 47%,145 53%,145" fill="white" stroke="#334155" stroke-width="2" />
+                    </svg>
+
+                    <!-- Pare (Abstracte) -->
+                    <div class="uml-card abstract" style="top: 20px; left: 50%; transform: translateX(-50%); width: 180px;">
+                        <div class="uml-header text-slate-500 italic">Animal {Abstract}</div>
+                        <div class="uml-section text-xs">
+                            <span class="text-yellow-600 font-bold">#</span> age : int
+                        </div>
+                        <div class="uml-section text-xs text-slate-500 italic">
+                            + Eat() : void {abstract}
+                        </div>
+                    </div>
+
+                    <!-- Fill (Concret) -->
+                    <div class="uml-card" style="bottom: 30px; left: 50%; transform: translateX(-50%); width: 200px; border-color: #ea580c;">
+                        <div class="uml-header bg-orange-50">Lion</div>
+                        <div class="uml-section text-xs bg-orange-50/30">
+                            <!-- Atributs propis del Lleó -->
+                            <span class="text-red-600 font-bold">-</span> weight : double<br>
+                            <span class="text-green-600 font-bold">+</span> Name : string<br>
+                            <span class="text-red-600 font-bold">-</span> isHungry : bool
+                        </div>
+                        <div class="uml-section text-xs">
+                            <span class="text-green-600 font-bold">+</span> Eat() : void<br>
+                            <span class="text-green-600 font-bold">+</span> Roar() : void
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Code -->
+                <div>
+<pre class="code-block">
+<span class="comment">// Classe base: Comuna a tots</span>
+<span class="kwd">public abstract class</span> <span class="typ">Animal</span>
+{
+    <span class="comment">// Atribut compartit per tots els animals</span>
+    <span class="kwd">protected</span> <span class="typ">int</span> age; 
+    
+    <span class="comment">// Mètode abstracte: NO té cos aquí.</span>
+    <span class="kwd">public abstract void</span> <span class="mth">Eat</span>(); 
+}
+
+<span class="comment">// Classe derivada</span>
+<span class="kwd">public class</span> <span class="typ">Lion</span> : <span class="typ">Animal</span>
+{
+    <span class="comment">// Propietats pròpies del Lleó</span>
+    <span class="kwd">private double</span> _weight;
+    <span class="kwd">public string</span> Name;
+    <span class="kwd">private bool</span> _isHungry;
+
+    <span class="comment">// OBLIGATORI: Implementar el mètode abstracte del pare</span>
+    <span class="kwd">public override void</span> <span class="mth">Eat</span>() 
+    {
+        Console.WriteLine(<span class="str">"Eating zebra..."</span>);
+        _isHungry = <span class="kwd">false</span>;
+    }
+}
+</pre>
+                </div>
+            </div>
+        </section>
+
+        <!-- 3. RELACIONS -->
+        <section id="relations" class="scroll-mt-24">
+            <div class="flex items-center gap-4 mb-8">
+                <div class="w-2 h-10 bg-emerald-600 rounded"></div>
+                <div>
+                    <h2 class="text-3xl font-bold text-slate-900">3. Relacions entre Classes</h2>
+                    <p class="text-slate-600">Com connectem els objectes? Qui posseeix a qui?</p>
+                </div>
+            </div>
+
+            <div class="space-y-12">
+                
+                <!-- COMPOSICIÓ -->
+                <div class="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm">
+                    <h3 class="text-xl font-bold text-slate-800 mb-4 flex items-center gap-2">
+                        <span class="text-2xl">◆</span> Composició (Forta)
+                    </h3>
+                    <p class="text-sm text-slate-600 mb-4">
+                        Relació "Part de" (Forta). Si el Lleó mor, el **Cor** també deixa de funcionar. El Cor no té sentit sense el Lleó.
+                    </p>
+                    <div class="grid lg:grid-cols-2 gap-8 items-center">
+                        <!-- SVG Diagrama -->
+                        <div class="h-40 relative bg-slate-50 rounded border border-slate-100 w-full">
+                            <!-- Cards posicionades absolutament -->
+                            <div class="uml-card" style="left: 20px; top: 35%; width: 100px;">
+                                <div class="uml-header">Lion</div>
+                            </div>
+                            <div class="uml-card" style="right: 20px; top: 35%; width: 100px;">
+                                <div class="uml-header">Heart</div>
+                            </div>
+                            
+                            <!-- Línia Composició Manual -->
+                            <svg class="absolute w-full h-full pointer-events-none">
+                                <!-- Linia des de la dreta de Lion fins esquerra Heart -->
+                                <line x1="122" y1="50%" x2="calc(100% - 122px)" y2="50%" stroke="#334155" stroke-width="2" />
+                                <!-- Rombe Ple al costat de Lion (Contenidor) -->
+                                <polygon points="122,50% 132,42% 142,50% 132,58%" fill="#334155" stroke="#334155" stroke-width="2" />
+                            </svg>
+                        </div>
+                        <!-- Codi -->
+<pre class="code-block" style="padding: 1rem;">
+<span class="kwd">public class</span> <span class="typ">Lion</span> 
+{
+    <span class="kwd">private</span> <span class="typ">Heart</span> _heart;
+
+    <span class="kwd">public</span> Lion() 
+    {
+        <span class="comment">// COMPOSICIÓ: El Lleó crea el cor.</span>
+        <span class="comment">// Neixen junts, moren junts.</span>
+        _heart = <span class="kwd">new</span> <span class="typ">Heart</span>();
+    }
+}
+</pre>
+                    </div>
+                </div>
+
+                <!-- AGREGACIÓ -->
+                <div class="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm">
+                    <h3 class="text-xl font-bold text-slate-800 mb-4 flex items-center gap-2">
+                        <span class="text-2xl">◇</span> Agregació (Feble)
+                    </h3>
+                    <p class="text-sm text-slate-600 mb-4">
+                        Relació "Té un" (Feble). El lleó porta un **Collar GPS**. Si el lleó mor, el collar es pot reutilitzar en un altre animal.
+                    </p>
+                    <div class="grid lg:grid-cols-2 gap-8 items-center">
+                        <!-- SVG Diagrama -->
+                        <div class="h-40 relative bg-slate-50 rounded border border-slate-100 w-full">
+                            <!-- Cards -->
+                            <div class="uml-card" style="left: 20px; top: 35%; width: 100px;">
+                                <div class="uml-header">Lion</div>
+                            </div>
+                            <div class="uml-card" style="right: 20px; top: 35%; width: 100px;">
+                                <div class="uml-header">Collar</div>
+                            </div>
+                            
+                            <!-- Línia Agregació Manual -->
+                            <svg class="absolute w-full h-full pointer-events-none">
+                                <line x1="122" y1="50%" x2="calc(100% - 122px)" y2="50%" stroke="#334155" stroke-width="2" />
+                                <!-- Rombe Buit al costat de Lion (Contenidor) -->
+                                <polygon points="122,50% 132,42% 142,50% 132,58%" fill="white" stroke="#334155" stroke-width="2" />
+                            </svg>
+                        </div>
+                        <!-- Codi -->
+<pre class="code-block" style="padding: 1rem;">
+<span class="kwd">public class</span> <span class="typ">Lion</span> 
+{
+    <span class="kwd">private</span> <span class="typ">Collar</span> _gps;
+
+    <span class="comment">// AGREGACIÓ: El collar ve de fora (Paràmetre).</span>
+    <span class="comment">// No el crea el lleó, algú l'hi posa.</span>
+    <span class="kwd">public void</span> <span class="mth">SetCollar</span>(<span class="typ">Collar</span> c) 
+    {
+        _gps = c;
+    }
+}
+</pre>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- 4. ENCAPSULAMENT -->
+        <section id="encapsulation" class="scroll-mt-24">
+            <div class="flex items-center gap-4 mb-8">
+                <div class="w-2 h-10 bg-orange-500 rounded"></div>
+                <div>
+                    <h2 class="text-3xl font-bold text-slate-900">4. Encapsulament</h2>
+                    <p class="text-slate-600">Protecció de la integritat de les dades.</p>
+                </div>
+            </div>
+
+            <div class="bg-white p-8 rounded-2xl border border-slate-200">
+                <h3 class="font-bold text-lg mb-4 text-purple-700">Exemple: Control de Pes (Weight)</h3>
+                <p class="text-sm text-slate-600 mb-4">Un animal no pot tenir un pes negatiu. L'encapsulament ens permet validar això.</p>
+                
+                <div class="grid lg:grid-cols-2 gap-8">
+<pre class="code-block">
+<span class="kwd">private double</span> _weight; <span class="comment">// Camp Privat</span>
+
+<span class="kwd">public double</span> Weight    <span class="comment">// Propietat Pública</span>
+{
+    <span class="kwd">get</span> => _weight;
+    <span class="kwd">set</span> 
+    { 
+        <span class="comment">// Validació: El pes no pot ser negatiu</span>
+        <span class="kwd">if</span> (value < <span class="num">0</span>) 
+        {
+            Console.WriteLine(<span class="str">"Error: Pes invàlid"</span>);
+            _weight = <span class="num">0</span>;
+        }
+        <span class="kwd">else</span> 
+        {
+            _weight = value;
+        }
+    }
+}
+</pre>
+                    <div class="flex flex-col justify-center gap-4">
+                        <div class="bg-orange-50 p-4 rounded border-l-4 border-orange-400 text-sm text-orange-900">
+                            <strong>Seguretat:</strong> Si intentem fer <code>lion.Weight = -50</code>, el sistema ho detectarà i ho corregirà. Això manté la integritat del sistema.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 5. INTERFÍCIES -->
+        <section id="interfaces" class="scroll-mt-24">
+            <div class="flex items-center gap-4 mb-8">
+                <div class="w-2 h-10 bg-pink-600 rounded"></div>
+                <div>
+                    <h2 class="text-3xl font-bold text-slate-900">5. Interfícies</h2>
+                    <p class="text-slate-600">Definició de rols i capacitats.</p>
+                </div>
+            </div>
+
+            <div class="bg-white p-8 rounded-2xl border border-slate-200 flex flex-col shadow-sm">
+                <h3 class="font-bold text-lg mb-4 text-pink-700">Interfície: IPredator</h3>
+                
+                <!-- Explicació Pedagògica -->
+                <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-6">
+                    <h4 class="font-bold text-sm text-yellow-800 uppercase mb-2">Per què crear una categoria pròpia?</h4>
+                    <p class="text-sm text-yellow-900 leading-relaxed mb-3">
+                        Si poséssim el mètode <code>Hunt()</code> a la classe pare <code>Animal</code>, tots els animals (Zebres, Pingüins) estarien obligats a saber caçar, cosa que no té sentit.
+                    </p>
+                    <p class="text-sm text-yellow-900 leading-relaxed">
+                        <strong>Solució:</strong> Creem una interfície <code>IPredator</code>. És com una "etiqueta" que només es posa als animals que realment cacen. Això separa el "ser" (Animal) del "fer" (Caçar).
+                    </p>
+                </div>
+
+                <div class="grid lg:grid-cols-2 gap-8">
+<pre class="code-block">
+<span class="comment">// Contracte de Capacitat</span>
+<span class="kwd">public interface</span> <span class="typ">IPredator</span> 
+{
+    <span class="kwd">void</span> <span class="mth">Hunt</span>();
+}
+
+<span class="comment">// Lion és Animal (herència) I IPredator (rol)</span>
+<span class="kwd">public class</span> <span class="typ">Lion</span> : <span class="typ">Animal</span>, <span class="typ">IPredator</span>
+{
+    <span class="comment">// Mètode que ve de l'Herència</span>
+    <span class="kwd">public override void</span> <span class="mth">Eat</span>() { ... }
+
+    <span class="comment">// Mètode que ve de la Interfície</span>
+    <span class="kwd">public void</span> <span class="mth">Hunt</span>() 
+    {
+        Console.WriteLine(<span class="str">"Attacking prey..."</span>);
+    }
+}
+</pre>
+                    <div class="flex items-center justify-center">
+                        <svg width="200" height="150">
+                            <!-- Interface -->
+                            <rect x="50" y="10" width="100" height="40" fill="#fdf2f8" stroke="#be185d" stroke-dasharray="4"/>
+                            <text x="100" y="35" font-family="monospace" font-size="10" text-anchor="middle" font-style="italic" fill="#be185d">&lt;&lt;interface&gt;&gt;</text>
+                            <text x="100" y="25" font-family="monospace" font-size="12" font-weight="bold" text-anchor="middle" fill="#be185d">IPredator</text>
+                            
+                            <!-- Class -->
+                            <rect x="50" y="100" width="100" height="40" fill="white" stroke="#334155"/>
+                            <text x="100" y="125" font-family="monospace" font-size="12" font-weight="bold" text-anchor="middle">Lion</text>
+
+                            <!-- Realization Arrow -->
+                            <line x1="100" y1="100" x2="100" y2="62" stroke="#be185d" stroke-dasharray="4" />
+                            <polygon points="100,50 95,62 105,62" fill="white" stroke="#be185d" />
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 6. DIAGRAMA FINAL -->
+        <section id="diagrama" class="scroll-mt-24">
+            <div class="bg-slate-900 p-8 rounded-3xl shadow-2xl relative overflow-hidden">
+                <h2 class="text-3xl font-bold text-white mb-8 relative z-10">6. Arquitectura Final del Zoo</h2>
+                
+                <!-- CANVAS DIAGRAMA AMB SVG EXPLÍCIT -->
+                <div class="relative w-full h-[600px] bg-slate-800/50 rounded-xl border border-slate-700 mx-auto overflow-hidden">
+                    
+                    <!-- HTML LAYER (Targetes posicionades absolutament) -->
+                    <!-- Zoo -->
+                    <div class="uml-card" style="top: 20px; left: 50%; transform: translateX(-50%); width: 160px;">
+                        <div class="uml-header bg-blue-100">Zoo</div>
+                        <div class="uml-section text-xs">+ Name : string</div>
+                    </div>
+
+                    <!-- Enclosure -->
+                    <div class="uml-card" style="top: 150px; left: 50%; transform: translateX(-50%); width: 160px;">
+                        <div class="uml-header">Enclosure</div>
+                        <div class="uml-section text-xs">- animals : List&lt;Animal&gt;</div>
+                    </div>
+
+                    <!-- Animal -->
+                    <div class="uml-card abstract" style="top: 280px; left: 50%; transform: translateX(-50%); width: 160px;">
+                        <div class="uml-header bg-slate-200 text-slate-600">Animal {Abstract}</div>
+                        <div class="uml-section text-xs"># age : int</div>
+                        <div class="uml-section text-xs text-slate-500 italic">+ Eat() : void</div>
+                    </div>
+
+                    <!-- Lion -->
+                    <div class="uml-card" style="top: 420px; left: 18%; width: 140px;">
+                        <div class="uml-header">Lion</div>
+                        <div class="uml-section text-xs bg-orange-50 font-bold text-orange-800 border-b border-slate-200">
+                            - weight : double<br>
+                            - isHungry : bool
+                        </div>
+                        <div class="uml-section text-xs">+ Eat() : void<br>+ Hunt() : void</div>
+                    </div>
+
+                    <!-- Penguin -->
+                    <div class="uml-card" style="top: 420px; right: 18%; width: 140px;">
+                        <div class="uml-header">Penguin</div>
+                        <div class="uml-section text-xs">+ Swim()</div>
+                    </div>
+
+                    <!-- Heart (Nova Entitat per Composició) -->
+                    <div class="uml-card" style="top: 520px; left: 10%; width: 80px;">
+                        <div class="uml-header bg-red-100">Heart</div>
+                    </div>
+
+                    <!-- Collar (Nova Entitat per Agregació) -->
+                    <div class="uml-card" style="top: 520px; left: 35%; width: 80px;">
+                        <div class="uml-header bg-yellow-100">Collar</div>
+                    </div>
+
+                    <!-- Interface -->
+                    <div class="uml-card" style="top: 420px; left: 50%; transform: translateX(-50%); width: 140px; background: transparent; border: 1px dashed #cbd5e1; color: white;">
+                        <div class="uml-header bg-transparent text-slate-300 border-slate-500">&lt;&lt;interface&gt;&gt;<br>IPredator</div>
+                        <div class="uml-section text-xs text-slate-300 border-slate-500">+ Hunt()</div>
+                    </div>
+
+                    <!-- SVG LINES LAYER (Manual) -->
+                    <svg class="absolute inset-0 w-full h-full pointer-events-none" style="z-index: 0;">
+                        
+                        <!-- 1. Composició: Zoo -> Enclosure -->
+                        <line x1="50%" y1="80" x2="50%" y2="150" stroke="#94a3b8" stroke-width="2" />
+                        <!-- Rombe PLE (Zoo) -->
+                        <polygon points="50%,80 49%,90 50%,100 51%,90" fill="#94a3b8" stroke="#94a3b8" />
+
+                        <!-- 2. Agregació: Enclosure -> Animal -->
+                        <line x1="50%" y1="210" x2="50%" y2="280" stroke="#94a3b8" stroke-width="2" />
+                        <!-- Rombe BUIT (Enclosure) -->
+                        <polygon points="50%,210 49%,220 50%,230 51%,220" fill="#1e293b" stroke="#94a3b8" stroke-width="2" />
+
+                        <!-- 3. Herència: Animal -> Lion/Penguin -->
+                        <!-- Tronc -->
+                        <line x1="50%" y1="360" x2="50%" y2="390" stroke="#94a3b8" stroke-width="2" />
+                        <!-- Triangle BUIT (Animal) -->
+                        <polygon points="50%,360 48.5%,375 51.5%,375" fill="#1e293b" stroke="#94a3b8" stroke-width="2" />
+                        
+                        <!-- Branques -->
+                        <line x1="25%" y1="390" x2="75%" y2="390" stroke="#94a3b8" stroke-width="2" />
+                        <line x1="25%" y1="390" x2="25%" y2="420" stroke="#94a3b8" stroke-width="2" />
+                        <line x1="75%" y1="390" x2="75%" y2="420" stroke="#94a3b8" stroke-width="2" />
+
+                        <!-- 4. Realització: Lion -> Interface -->
+                        <!-- Lion right side aprox 28% -> Interface left side aprox 42% -->
+                        <line x1="33%" y1="450" x2="42%" y2="450" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="5,5" />
+                        <polygon points="42%,450 40%,445 40%,455" fill="#1e293b" stroke="#94a3b8" stroke-width="1.5" />
+
+                        <!-- 5. Composició: Lion -> Heart -->
+                        <!-- Lion bottom leftish -> Heart top -->
+                        <line x1="20%" y1="500" x2="15%" y2="520" stroke="#94a3b8" stroke-width="2" />
+                        <polygon points="20%,500 19%,505 20%,510 21%,505" fill="#94a3b8" stroke="#94a3b8" stroke-width="2" />
+
+                        <!-- 6. Agregació: Lion -> Collar -->
+                        <!-- Lion bottom rightish -> Collar top -->
+                        <line x1="28%" y1="500" x2="38%" y2="520" stroke="#94a3b8" stroke-width="2" />
+                        <polygon points="28%,500 27%,505 28%,510 29%,505" fill="#1e293b" stroke="#94a3b8" stroke-width="2" />
+
+                    </svg>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- 7. PRÀCTICA -->
+        <section id="practica" class="py-12">
+            <div class="text-center mb-10">
+                <h2 class="text-3xl font-bold text-slate-900">Zona d'Entrenament ITB</h2>
+                <p class="text-slate-600 mt-2">Posa a prova els teus coneixements amb els qüestionaris interactius.</p>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+                <a href="quiz-uml-poo.html" target="_blank" class="group bg-white p-8 rounded-2xl shadow-md border border-slate-200 hover:shadow-xl hover:-translate-y-1 transition flex flex-col items-center">
+                    <span class="text-4xl mb-4">📐</span>
+                    <h3 class="text-xl font-bold text-slate-800">Quiz Teòric UML</h3>
+                    <p class="text-slate-500 mt-2 text-sm text-center">Preguntes sobre simbologia i relacions.</p>
+                    <span class="mt-4 text-emerald-600 font-bold text-sm">Obrir Test →</span>
+                </a>
+
+                <a href="hunt-error.html" target="_blank" class="group bg-white p-8 rounded-2xl shadow-md border border-slate-200 hover:shadow-xl hover:-translate-y-1 transition flex flex-col items-center">
+                    <span class="text-4xl mb-4">🐛</span>
+                    <h3 class="text-xl font-bold text-slate-800">Caça d'Errors C#</h3>
+                    <p class="text-slate-500 mt-2 text-sm text-center">Troba fallades en codi real.</p>
+                    <span class="mt-4 text-amber-600 font-bold text-sm">Depurar Codi →</span>
+                </a>
+            </div>
+            <p class="text-center text-xs text-slate-400 mt-8">* Assegura't de tenir els fitxers .html a la mateixa carpeta.</p>
+        </section>
+
+    </main>
+
+    <footer class="bg-white border-t border-slate-200 py-8 text-center text-sm text-slate-500">
+        <p>Institut Tecnològic de Barcelona - DAMV 2025/2026</p>
+    </footer>
+
+</body>
+</html>
